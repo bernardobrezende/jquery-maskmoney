@@ -203,7 +203,7 @@
 					var originalLen = input.val().length;
 					var mvalue = maskValue(x.value);
 					
-					if (settings.fixPrecisionOnZero === true) {
+					if (settings.fixPrecisionOnZero === true && mvalue.indexOf(',00') === -1) {
 						mvalue = mvalue + ",00";
 					}
 					input.val(mvalue);
