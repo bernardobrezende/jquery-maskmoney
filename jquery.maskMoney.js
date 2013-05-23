@@ -35,6 +35,7 @@
 				thousands: ',',
 				decimal: '.',
 				precision: 2,
+				precisionAlwaysZero: false,
 				defaultZero: true,
 				allowZero: false,
 				allowNegative: false
@@ -243,6 +244,12 @@
 					t = n.toFixed(settings.precision);
 
 					i = settings.precision == 0 ? 0 : 1;
+					
+					if (settings.precisionAlwaysZero === true) {
+						settings.precision = 0;
+						d = "00";
+					}
+					
 					var p, d = (t=t.split('.'))[i].substr(0,settings.precision);
 					for (p = (t=t[0]).length; (p-=3)>=1;) {
 						t = t.substr(0,p)+settings.thousands+t.substr(p);
