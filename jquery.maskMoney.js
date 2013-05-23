@@ -201,7 +201,13 @@
 
 				function maskAndPosition(x, startPos) {
 					var originalLen = input.val().length;
-					input.val(maskValue(x.value));
+					var mvalue = maskValue(x.value);
+					
+					if (settings.fixPrecisionOnZero === true) {
+						console.log(mvalue);
+					}
+					input.val(mvalue);
+					
 					var newLen = input.val().length;
 					startPos = startPos - (originalLen - newLen);
 					setCursorPosition(input, startPos);
@@ -251,7 +257,7 @@
 					
 					
 					
-					var p, d =  settings.fixPrecisionOnZero === true ? "00" : (t=t.split('.'))[i].substr(0,settings.precision);
+					var p, d = (t=t.split('.'))[i].substr(0,settings.precision);
 					for (p = (t=t[0]).length; (p-=3)>=1;) {
 						t = t.substr(0,p)+settings.thousands+t.substr(p);
 					}
