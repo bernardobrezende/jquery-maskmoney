@@ -204,7 +204,7 @@
 					var mvalue = maskValue(x.value);
 					
 					if (settings.fixPrecisionOnZero === true) {
-						console.log(mvalue);
+						mvalue = mvalue + ",00";
 					}
 					input.val(mvalue);
 					
