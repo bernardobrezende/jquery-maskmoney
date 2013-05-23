@@ -246,9 +246,9 @@
 					}
 					var n = parseFloat(a);
 					
-					if (settings.fixPrecisionOnZero === true) {
-						settings.precision = 0;						
-					}
+					//if (settings.fixPrecisionOnZero === true) {
+						//settings.precision = 0;						
+					//}
 
 					n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
 					t = n.toFixed(settings.precision);
