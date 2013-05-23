@@ -202,7 +202,7 @@
 				function maskAndPosition(x, startPos) {
 					
 					if (settings.fixPrecisionOnZero === true && startPos >= 3) {
-						startPos -= 3;
+						//startPos -= 3;
 					}
 					
 					var originalLen = input.val().length;
