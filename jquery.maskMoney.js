@@ -239,13 +239,13 @@
 						if (strCheck.indexOf(v.charAt(i))!=-1) a+= v.charAt(i);
 					}
 					var n = parseFloat(a);
-
-					n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
-					t = n.toFixed(settings.precision);
-
+					
 					if (settings.fixPrecisionOnZero === true) {
 						settings.precision = 0;						
 					}
+
+					n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
+					t = n.toFixed(settings.precision);
 
 					i = settings.precision == 0 ? 0 : 1;
 					
