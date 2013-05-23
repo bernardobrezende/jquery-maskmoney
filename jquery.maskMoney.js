@@ -200,6 +200,11 @@
 				}
 
 				function maskAndPosition(x, startPos) {
+					
+					if (settings.fixPrecisionOnZero === true && startPos >= 2) {
+						startPos -= 2;
+					}
+					
 					var originalLen = input.val().length;
 					var mvalue = maskValue(x.value);
 					
