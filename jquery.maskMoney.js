@@ -251,16 +251,15 @@
 					}
 					var n = parseFloat(a);
 					
-					//if (settings.fixPrecisionOnZero === true) {
-						//settings.precision = 0;						
-					//}
-
-					n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
+					if (settings.fixPrecisionOnZero === true) {
+						n = isNaN(n) ? 0 : n;						
+					} else {
+						n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
+					}
+					
 					t = n.toFixed(settings.precision);
 
 					i = settings.precision == 0 ? 0 : 1;
-					
-					
 					
 					var p, d = (t=t.split('.'))[i].substr(0,settings.precision);
 					for (p = (t=t[0]).length; (p-=3)>=1;) {
