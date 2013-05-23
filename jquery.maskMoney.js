@@ -35,7 +35,7 @@
 				thousands: ',',
 				decimal: '.',
 				precision: 2,
-				precisionAlwaysZero: false,
+				fixPrecisionOnZero: false,
 				defaultZero: true,
 				allowZero: false,
 				allowNegative: false
@@ -243,14 +243,15 @@
 					n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
 					t = n.toFixed(settings.precision);
 
+					if (settings.fixPrecisionOnZero === true) {
+						settings.precision = 0;						
+					}
+
 					i = settings.precision == 0 ? 0 : 1;
 					
-					if (settings.precisionAlwaysZero === true) {
-						settings.precision = 0;
-						d = "00";
-					}
 					
-					var p, d = (t=t.split('.'))[i].substr(0,settings.precision);
+					
+					var p, d =  settings.fixPrecisionOnZero === true ? "00" : (t=t.split('.'))[i].substr(0,settings.precision);
 					for (p = (t=t[0]).length; (p-=3)>=1;) {
 						t = t.substr(0,p)+settings.thousands+t.substr(p);
 					}
