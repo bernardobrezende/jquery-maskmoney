@@ -4,385 +4,390 @@
 * version: 2.1.3
 * Licensed under the MIT license
 */
-;(function($) {
-	if(!$.browser){
-		$.browser = {};
-		$.browser.mozilla = /mozilla/.test(navigator.userAgent.toLowerCase()) && !/webkit/.test(navigator.userAgent.toLowerCase());
-		$.browser.webkit = /webkit/.test(navigator.userAgent.toLowerCase());
-		$.browser.opera = /opera/.test(navigator.userAgent.toLowerCase());
-		$.browser.msie = /msie/.test(navigator.userAgent.toLowerCase());
-	}
+; (function ($) {
+    if (!$.browser) {
+        $.browser = {};
+        $.browser.mozilla = /mozilla/.test(navigator.userAgent.toLowerCase()) && !/webkit/.test(navigator.userAgent.toLowerCase());
+        $.browser.webkit = /webkit/.test(navigator.userAgent.toLowerCase());
+        $.browser.opera = /opera/.test(navigator.userAgent.toLowerCase());
+        $.browser.msie = /msie/.test(navigator.userAgent.toLowerCase());
+    }
 
-	var methods = {
-		destroy : function(){
-			var input = $(this);
-			input.unbind('.maskMoney');
+    var methods = {
+        destroy: function () {
+            var input = $(this);
+            input.unbind('.maskMoney');
 
-			if ($.browser.msie) {
-				this.onpaste = null;
-			}
-			return this;
-		},
+            if ($.browser.msie) {
+                this.onpaste = null;
+            }
+            return this;
+        },
 
-		mask : function(){
-			return this.trigger('mask');
-		},
-		
-		init : function(settings) {
-			settings = $.extend({
-				symbol: '',
-				symbolStay: false,
-				thousands: ',',
-				decimal: '.',
-				precision: 2,
-				fixPrecisionOnZero: false,
-				defaultZero: true,
-				allowZero: false,
-				allowNegative: false
-			}, settings);
+        mask: function () {
+            return this.trigger('mask');
+        },
 
-			return this.each(function() {
-				var input = $(this);
-				var dirty = false;
+        init: function (settings) {
+            settings = $.extend({
+                symbol: '',
+                symbolStay: false,
+                thousands: ',',
+                decimal: '.',
+                precision: 2,
+                fixPrecisionOnValue: undefined,
+                defaultZero: true,
+                allowZero: false,
+                allowNegative: false
+            }, settings);
 
-				function markAsDirty() {
-					dirty = true;
-				}
+            var FIXED_PRECISION = settings.decimal;
+            if (settings.fixPrecisionOnValue !== undefined) {
+                for (y = 0; y < settings.precision; y++)
+                    FIXED_PRECISION = FIXED_PRECISION.concat(settings.fixPrecisionOnValue);
+            }
 
-				function clearDirt(){
-					dirty = false;
-				}
+            return this.each(function () {
+                var input = $(this);
+                var dirty = false;
 
-				function keypressEvent(e) {
-					e = e || window.event;
-					var k = e.which || e.charCode || e.keyCode;
-					if (k == undefined) return false; //needed to handle an IE "special" event
-					if (k < 48 || k > 57) { // any key except the numbers 0-9
-						if (k == 45) { // -(minus) key
-							markAsDirty();
-							input.val(changeSign(input));
-							return false;
-						} else if (k == 43) { // +(plus) key
-							markAsDirty();
-							input.val(input.val().replace('-',''));
-							return false;
-						} else if (k == 13 || k == 9) { // enter key or tab key
-							if(dirty){
-								clearDirt();
-								$(this).change();
-							}
-							return true;
-						} else if ($.browser.mozilla && (k == 37 || k == 39) && e.charCode == 0) {
-							// needed for left arrow key or right arrow key with firefox
-							// the charCode part is to avoid allowing '%'(e.charCode 0, e.keyCode 37)
-							return true;
-						} else { // any other key with keycode less than 48 and greater than 57
-							preventDefault(e);
-							return true;
-						}
-					} else if (canInputMoreNumbers(input)) {
-						return false;
-					} else {
-						preventDefault(e);
+                function markAsDirty() {
+                    dirty = true;
+                }
 
-						var key = String.fromCharCode(k);
-						var x = input.get(0);
-						var selection = getInputSelection(x);
-						var startPos = selection.start;
-						var endPos = selection.end;
-						x.value = x.value.substring(0, startPos) + key + x.value.substring(endPos, x.value.length);
-						maskAndPosition(x, startPos + 1);
-						markAsDirty();
-						return false;
-					}
-				}
+                function clearDirt() {
+                    dirty = false;
+                }
 
-				function canInputMoreNumbers(element){
-					var reachedMaxLenght = (element.val().length >= element.attr('maxlength') && element.attr('maxlength') >= 0);
-					var selection = getInputSelection(element.get(0));
-					var start = selection.start;
-					var end = selection.end;
-					var hasNumberSelected = (selection.start != selection.end && element.val().substring(start,end).match(/\d/))? true : false;
-					return reachedMaxLenght && !hasNumberSelected;
-				}
+                function keypressEvent(e) {
+                    e = e || window.event;
+                    var k = e.which || e.charCode || e.keyCode;
+                    if (k == undefined) return false; //needed to handle an IE "special" event
+                    if (k < 48 || k > 57) { // any key except the numbers 0-9
+                        if (k == 45) { // -(minus) key
+                            markAsDirty();
+                            input.val(changeSign(input));
+                            return false;
+                        } else if (k == 43) { // +(plus) key
+                            markAsDirty();
+                            input.val(input.val().replace('-', ''));
+                            return false;
+                        } else if (k == 13 || k == 9) { // enter key or tab key
+                            if (dirty) {
+                                clearDirt();
+                                $(this).change();
+                            }
+                            return true;
+                        } else if ($.browser.mozilla && (k == 37 || k == 39) && e.charCode == 0) {
+                            // needed for left arrow key or right arrow key with firefox
+                            // the charCode part is to avoid allowing '%'(e.charCode 0, e.keyCode 37)
+                            return true;
+                        } else { // any other key with keycode less than 48 and greater than 57
+                            preventDefault(e);
+                            return true;
+                        }
+                    } else if (canInputMoreNumbers(input)) {
+                        return false;
+                    } else {
+                        preventDefault(e);
 
-				function keydownEvent(e) {
-					e = e||window.event;
-					var k = e.which || e.charCode || e.keyCode;
-					if (k == undefined) return false; //needed to handle an IE "special" event
+                        var key = String.fromCharCode(k);
+                        var x = input.get(0);
+                        var selection = getInputSelection(x);
+                        var startPos = selection.start;
+                        var endPos = selection.end;
+                        x.value = x.value.substring(0, startPos) + key + x.value.substring(endPos, x.value.length);
+                        maskAndPosition(x, startPos + 1);
+                        markAsDirty();
+                        return false;
+                    }
+                }
 
-					var x = input.get(0);
-					var selection = getInputSelection(x);
-					var startPos = selection.start;
-					var endPos = selection.end;
+                function canInputMoreNumbers(element) {
+                    var reachedMaxLenght = (element.val().length >= element.attr('maxlength') && element.attr('maxlength') >= 0);
+                    var selection = getInputSelection(element.get(0));
+                    var start = selection.start;
+                    var end = selection.end;
+                    var hasNumberSelected = (selection.start != selection.end && element.val().substring(start, end).match(/\d/)) ? true : false;
+                    return reachedMaxLenght && !hasNumberSelected;
+                }
 
-					if (k==8) { // backspace key
-						preventDefault(e);
-						
-						if(startPos == endPos){
-							if (settings.fixPrecisionOnZero === true && startPos >= 3) {
-							startPos -= 3;
-						}
-							// Remove single character
-							x.value = x.value.substring(0, startPos - 1) + x.value.substring(endPos, x.value.length);
-							startPos = startPos - 1;
-						} else {
-							// Remove multiple characters
-							x.value = x.value.substring(0, startPos) + x.value.substring(endPos, x.value.length);
-						}
-						maskAndPosition(x, startPos);
-						markAsDirty();
-						return false;
-					} else if (k==9) { // tab key
-						if(dirty) {
-							$(this).change();
-							clearDirt();
-						}
-						return true;
-					} else if ( k==46 || k==63272 ) { // delete key (with special case for safari)
-						preventDefault(e);
-						if(x.selectionStart == x.selectionEnd){
-							// Remove single character
-							x.value = x.value.substring(0, startPos) + x.value.substring(endPos + 1, x.value.length);
-						} else {
-							//Remove multiple characters
-							x.value = x.value.substring(0, startPos) + x.value.substring(endPos, x.value.length);
-						}
-						maskAndPosition(x, startPos);
-						markAsDirty();
-						return false;
-					} else { // any other key
-						return true;
-					}
-				}
+                function keydownEvent(e) {
+                    e = e || window.event;
+                    var k = e.which || e.charCode || e.keyCode;
+                    if (k == undefined) return false; //needed to handle an IE "special" event
 
-				function focusEvent(e) {
-					var mask = getDefaultMask();
-					if (input.val() == mask) {
-						input.val('');
-					} else if (input.val()=='' && settings.defaultZero) {
-						input.val(setSymbol(mask));
-					} else {
-						input.val(setSymbol(input.val()));
-					}
-					if (this.createTextRange) {
-						var textRange = this.createTextRange();
-						textRange.collapse(false); // set the cursor at the end of the input
-						textRange.select();
-					}
-				}
+                    var x = input.get(0);
+                    var selection = getInputSelection(x);
+                    var startPos = selection.start;
+                    var endPos = selection.end;
 
-				function blurEvent(e) {
-					if ($.browser.msie) {
-						keypressEvent(e);
-					}
+                    if (k == 8) { // backspace key
+                        preventDefault(e);
 
-					if (input.val() == '' || input.val() == setSymbol(getDefaultMask()) || input.val() == settings.symbol) {
-						if(!settings.allowZero){
-							input.val('');
-						} else if (!settings.symbolStay){
-							input.val(getDefaultMask());
-						} else {
-							input.val(setSymbol(getDefaultMask()));
-						}
-					} else {
-						if (!settings.symbolStay){
-							input.val(input.val().replace(settings.symbol,''));
-						} else if (settings.symbolStay && input.val() == settings.symbol){
-							input.val(setSymbol(getDefaultMask()));
-						}
-					}
-				}
+                        if (startPos == endPos) {
+                            // if the precision is fixed, we force the user to input numbers before the decimal separator.
+                            if (settings.fixPrecisionOnValue !== undefined && startPos >= FIXED_PRECISION.length) {
+                                startPos -= FIXED_PRECISION.length;
+                            }
+                            // Remove single character
+                            x.value = x.value.substring(0, startPos - 1) + x.value.substring(endPos, x.value.length);
+                            startPos = startPos - 1;
+                        } else {
+                            // Remove multiple characters
+                            x.value = x.value.substring(0, startPos) + x.value.substring(endPos, x.value.length);
+                        }
+                        maskAndPosition(x, startPos);
+                        markAsDirty();
+                        return false;
+                    } else if (k == 9) { // tab key
+                        if (dirty) {
+                            $(this).change();
+                            clearDirt();
+                        }
+                        return true;
+                    } else if (k == 46 || k == 63272) { // delete key (with special case for safari)
+                        preventDefault(e);
+                        if (x.selectionStart == x.selectionEnd) {
+                            // Remove single character
+                            x.value = x.value.substring(0, startPos) + x.value.substring(endPos + 1, x.value.length);
+                        } else {
+                            //Remove multiple characters
+                            x.value = x.value.substring(0, startPos) + x.value.substring(endPos, x.value.length);
+                        }
+                        maskAndPosition(x, startPos);
+                        markAsDirty();
+                        return false;
+                    } else { // any other key
+                        return true;
+                    }
+                }
 
-				function preventDefault(e) {
-					if (e.preventDefault) { //standard browsers
-						e.preventDefault();
-					} else { // old internet explorer
-						e.returnValue = false
-					}
-				}
+                function focusEvent(e) {
+                    var mask = getDefaultMask();
+                    if (input.val() == mask) {
+                        input.val('');
+                    } else if (input.val() == '' && settings.defaultZero) {
+                        input.val(setSymbol(mask));
+                    } else {
+                        input.val(setSymbol(input.val()));
+                    }
+                    if (this.createTextRange) {
+                        var textRange = this.createTextRange();
+                        textRange.collapse(false); // set the cursor at the end of the input
+                        textRange.select();
+                    }
+                }
 
-				function maskAndPosition(x, startPos) {
-					var originalLen = input.val().length;
-					var mvalue = maskValue(x.value);
-					
-					if (settings.fixPrecisionOnZero === true && mvalue.indexOf(",00", mvalue.length - ",00".length) === -1) {
-						mvalue = mvalue + ",00";
-					}
-					input.val(mvalue);
-					
-					var newLen = input.val().length;
-					startPos = startPos - (originalLen - newLen);
-					setCursorPosition(input, startPos);
-				}
-				
-				function mask(){
-					var value = input.val();
-					input.val(maskValue(value));
-				}
+                function blurEvent(e) {
+                    if ($.browser.msie) {
+                        keypressEvent(e);
+                    }
 
-				function maskValue(v) {
-					v = v.replace(settings.symbol, '').replace(',00', '');
+                    if (input.val() == '' || input.val() == setSymbol(getDefaultMask()) || input.val() == settings.symbol) {
+                        if (!settings.allowZero) {
+                            input.val('');
+                        } else if (!settings.symbolStay) {
+                            input.val(getDefaultMask());
+                        } else {
+                            input.val(setSymbol(getDefaultMask()));
+                        }
+                    } else {
+                        if (!settings.symbolStay) {
+                            input.val(input.val().replace(settings.symbol, ''));
+                        } else if (settings.symbolStay && input.val() == settings.symbol) {
+                            input.val(setSymbol(getDefaultMask()));
+                        }
+                    }
+                }
 
-					var strCheck = '0123456789';
-					var len = v.length;
-					var a = '', t = '', neg='';
+                function preventDefault(e) {
+                    if (e.preventDefault) { //standard browsers
+                        e.preventDefault();
+                    } else { // old internet explorer
+                        e.returnValue = false
+                    }
+                }
 
-					if(len != 0 && v.charAt(0)=='-'){
-						v = v.replace('-','');
-						if(settings.allowNegative){
-							neg = '-';
-						}
-					}
+                function maskAndPosition(x, startPos) {
+                    var originalLen = input.val().length;
+                    var mvalue = maskValue(x.value);
 
-					if (len==0) {
-						if (!settings.defaultZero) return t;
-						t = '0.00';
-					}
+                    if (settings.fixPrecisionOnValue !== undefined && mvalue.indexOf(FIXED_PRECISION, mvalue.length - FIXED_PRECISION.length) === -1) {
+                        mvalue = mvalue.concat(FIXED_PRECISION);
+                    }
 
-					for (var i = 0; i<len; i++) {
-						if ((v.charAt(i)!='0') && (v.charAt(i)!=settings.decimal)) break;
-					}
+                    input.val(mvalue);
 
-					for (; i < len; i++) {
-						if (strCheck.indexOf(v.charAt(i))!=-1) a+= v.charAt(i);
-					}
-					var n = parseFloat(a);
-					
-					if (settings.fixPrecisionOnZero === true) {
-						n = isNaN(n) ? 0 : n;						
-					} else {
-						n = isNaN(n) ? 0 : n/Math.pow(10,settings.precision);
-					}
-					
-					t = n.toFixed(settings.precision);
+                    var newLen = input.val().length;
+                    startPos = startPos - (originalLen - newLen);
+                    setCursorPosition(input, startPos);
+                }
 
-					i = settings.precision == 0 ? 0 : 1;
-					
-					var p, d = (t=t.split('.'))[i].substr(0,settings.precision);
-					for (p = (t=t[0]).length; (p-=3)>=1;) {
-						t = t.substr(0,p)+settings.thousands+t.substr(p);
-					}
+                function mask() {
+                    var value = input.val();
+                    input.val(maskValue(value));
+                }
 
-					return (settings.precision>0)
-					? setSymbol(neg+t+settings.decimal+d+Array((settings.precision+1)-d.length).join(0))
-					: setSymbol(neg+t);
-				}
+                function maskValue(v) {
+                    // we remove fixed precision to avoid side-effects when applying the mask
+                    v = v.replace(settings.symbol, '').replace(FIXED_PRECISION, '');
 
-				function getDefaultMask() {
-					var n = parseFloat('0')/Math.pow(10,settings.precision);
-					return (n.toFixed(settings.precision)).replace(new RegExp('\\.','g'),settings.decimal);
-				}
+                    var strCheck = '0123456789';
+                    var len = v.length;
+                    var a = '', t = '', neg = '';
 
-				function setSymbol(value){
-					if (settings.symbol != ''){
-						var operator = '';
-						if(value.length != 0 && value.charAt(0) == '-'){
-							value = value.replace('-', '');
-							operator = '-';
-						}
+                    if (len != 0 && v.charAt(0) == '-') {
+                        v = v.replace('-', '');
+                        if (settings.allowNegative) {
+                            neg = '-';
+                        }
+                    }
 
-						if(value.substr(0, settings.symbol.length) != settings.symbol){
-							value = operator + settings.symbol + value;
-						}
-					}
-					return value;
-				}
+                    if (len == 0) {
+                        if (!settings.defaultZero) return t;
+                        t = '0.00';
+                    }
 
-				function changeSign(input){
-					var inputValue = input.val();
-					if (settings.allowNegative){
-						if (inputValue != '' && inputValue.charAt(0) == '-'){
-							return inputValue.replace('-','');
-						} else {
-							return '-' + inputValue;
-						}
-					} else {
-						return inputValue;
-					}
-				}
+                    for (var i = 0; i < len; i++) {
+                        if ((v.charAt(i) != '0') && (v.charAt(i) != settings.decimal)) break;
+                    }
 
-				function setCursorPosition(input, pos) {
-					// I'm not sure if we need to jqueryfy input
-					$(input).each(function(index, elem) {
-						if (elem.setSelectionRange) {
-							elem.focus();
-							elem.setSelectionRange(pos, pos);
-						} else if (elem.createTextRange) {
-							var range = elem.createTextRange();
-							range.collapse(true);
-							range.moveEnd('character', pos);
-							range.moveStart('character', pos);
-							range.select();
-						}
-					});
-					return this;
-				};
+                    for (; i < len; i++) {
+                        if (strCheck.indexOf(v.charAt(i)) != -1) a += v.charAt(i);
+                    }
+                    var n = parseFloat(a);
+                    
+                    n = isNaN(n) ? 0 : settings.fixPrecisionOnValue !== undefined ? n : n / Math.pow(10, settings.precision);
 
-				function getInputSelection(el) {
-					var start = 0, end = 0, normalizedValue, range, textInputRange, len, endRange;
+                    t = n.toFixed(settings.precision);
 
-					if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
-						start = el.selectionStart;
-						end = el.selectionEnd;
-					} else {
-						range = document.selection.createRange();
+                    i = settings.precision == 0 ? 0 : 1;
 
-						if (range && range.parentElement() == el) {
-							len = el.value.length;
-							normalizedValue = el.value.replace(/\r\n/g, "\n");
+                    var p, d = (t = t.split('.'))[i].substr(0, settings.precision);
+                    for (p = (t = t[0]).length; (p -= 3) >= 1;) {
+                        t = t.substr(0, p) + settings.thousands + t.substr(p);
+                    }
 
-							// Create a working TextRange that lives only in the input
-							textInputRange = el.createTextRange();
-							textInputRange.moveToBookmark(range.getBookmark());
+                    return (settings.precision > 0)
+					? setSymbol(neg + t + settings.decimal + d + Array((settings.precision + 1) - d.length).join(0))
+					: setSymbol(neg + t);
+                }
 
-							// Check if the start and end of the selection are at the very end
-							// of the input, since moveStart/moveEnd doesn't return what we want
-							// in those cases
-							endRange = el.createTextRange();
-							endRange.collapse(false);
+                function getDefaultMask() {
+                    var n = parseFloat('0') / Math.pow(10, settings.precision);
+                    return (n.toFixed(settings.precision)).replace(new RegExp('\\.', 'g'), settings.decimal);
+                }
 
-							if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
-								start = end = len;
-							} else {
-								start = -textInputRange.moveStart("character", -len);
-								start += normalizedValue.slice(0, start).split("\n").length - 1;
+                function setSymbol(value) {
+                    if (settings.symbol != '') {
+                        var operator = '';
+                        if (value.length != 0 && value.charAt(0) == '-') {
+                            value = value.replace('-', '');
+                            operator = '-';
+                        }
 
-								if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
-									end = len;
-								} else {
-									end = -textInputRange.moveEnd("character", -len);
-									end += normalizedValue.slice(0, end).split("\n").length - 1;
-								}
-							}
-						}
-					}
+                        if (value.substr(0, settings.symbol.length) != settings.symbol) {
+                            value = operator + settings.symbol + value;
+                        }
+                    }
+                    return value;
+                }
 
-					return {
-						start: start,
-						end: end
-					};
-				} // getInputSelection
+                function changeSign(input) {
+                    var inputValue = input.val();
+                    if (settings.allowNegative) {
+                        if (inputValue != '' && inputValue.charAt(0) == '-') {
+                            return inputValue.replace('-', '');
+                        } else {
+                            return '-' + inputValue;
+                        }
+                    } else {
+                        return inputValue;
+                    }
+                }
 
-				if (!input.attr("readonly")){
-					input.unbind('.maskMoney');
-					input.bind('keypress.maskMoney', keypressEvent);
-					input.bind('keydown.maskMoney', keydownEvent);
-					input.bind('blur.maskMoney', blurEvent);
-					input.bind('focus.maskMoney', focusEvent);
-					input.bind('mask.maskMoney', mask);
-				}
-			})
-		}
-	}
+                function setCursorPosition(input, pos) {
+                    // I'm not sure if we need to jqueryfy input
+                    $(input).each(function (index, elem) {
+                        if (elem.setSelectionRange) {
+                            elem.focus();
+                            elem.setSelectionRange(pos, pos);
+                        } else if (elem.createTextRange) {
+                            var range = elem.createTextRange();
+                            range.collapse(true);
+                            range.moveEnd('character', pos);
+                            range.moveStart('character', pos);
+                            range.select();
+                        }
+                    });
+                    return this;
+                };
 
-	$.fn.maskMoney = function(method) {
-		if ( methods[method] ) {
-			return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
-		} else if ( typeof method === 'object' || ! method ) {
-			return methods.init.apply( this, arguments );
-		} else {
-			$.error( 'Method ' +  method + ' does not exist on jQuery.maskMoney' );
-		}
-	};
+                function getInputSelection(el) {
+                    var start = 0, end = 0, normalizedValue, range, textInputRange, len, endRange;
+
+                    if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
+                        start = el.selectionStart;
+                        end = el.selectionEnd;
+                    } else {
+                        range = document.selection.createRange();
+
+                        if (range && range.parentElement() == el) {
+                            len = el.value.length;
+                            normalizedValue = el.value.replace(/\r\n/g, "\n");
+
+                            // Create a working TextRange that lives only in the input
+                            textInputRange = el.createTextRange();
+                            textInputRange.moveToBookmark(range.getBookmark());
+
+                            // Check if the start and end of the selection are at the very end
+                            // of the input, since moveStart/moveEnd doesn't return what we want
+                            // in those cases
+                            endRange = el.createTextRange();
+                            endRange.collapse(false);
+
+                            if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+                                start = end = len;
+                            } else {
+                                start = -textInputRange.moveStart("character", -len);
+                                start += normalizedValue.slice(0, start).split("\n").length - 1;
+
+                                if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
+                                    end = len;
+                                } else {
+                                    end = -textInputRange.moveEnd("character", -len);
+                                    end += normalizedValue.slice(0, end).split("\n").length - 1;
+                                }
+                            }
+                        }
+                    }
+
+                    return {
+                        start: start,
+                        end: end
+                    };
+                } // getInputSelection
+
+                if (!input.attr("readonly")) {
+                    input.unbind('.maskMoney');
+                    input.bind('keypress.maskMoney', keypressEvent);
+                    input.bind('keydown.maskMoney', keydownEvent);
+                    input.bind('blur.maskMoney', blurEvent);
+                    input.bind('focus.maskMoney', focusEvent);
+                    input.bind('mask.maskMoney', mask);
+                }
+            })
+        }
+    }
+
+    $.fn.maskMoney = function (method) {
+        if (methods[method]) {
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if (typeof method === 'object' || !method) {
+            return methods.init.apply(this, arguments);
+        } else {
+            $.error('Method ' + method + ' does not exist on jQuery.maskMoney');
+        }
+    };
 })(jQuery);
