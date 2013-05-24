@@ -1,6 +1,6 @@
 /*
 * maskMoney plugin for jQuery
-* http://www.github.com/bernardobrezende/jquery-maskmoney/
+* http://github.com/bernardobrezende/jquery-maskmoney/
 * version: 2.1.3
 * Licensed under the MIT license
 */
