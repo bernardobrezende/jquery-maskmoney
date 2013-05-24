@@ -206,7 +206,7 @@
 					}
 					
 					var originalLen = input.val().length;
-					var mvalue = maskValue(x.value);
+					var mvalue = maskValue(x.value.split(',')[0]);
 					
 					if (settings.fixPrecisionOnZero === true && mvalue.indexOf(",00", mvalue.length - ",00".length) === -1) {
 						mvalue = mvalue + ",00";
