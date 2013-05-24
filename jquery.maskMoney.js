@@ -224,7 +224,7 @@
 				}
 
 				function maskValue(v) {
-					v = v.replace(settings.symbol, '');
+					v = v.replace(settings.symbol, '').replace(',00', '');
 
 					var strCheck = '0123456789';
 					var len = v.length;
