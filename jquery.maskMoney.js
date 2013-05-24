@@ -1,7 +1,7 @@
 /*
 * maskMoney plugin for jQuery
-* http://plentz.github.com/jquery-maskmoney/
-* version: 2.1.2
+* http://bernardobrezende.github.com/jquery-maskmoney/
+* version: 2.1.3
 * Licensed under the MIT license
 */
 ;(function($) {
@@ -206,7 +206,7 @@
 					}
 					
 					var originalLen = input.val().length;
-					var mvalue = maskValue(x.value.split(',')[0]);
+					var mvalue = maskValue(x.value);
 					
 					if (settings.fixPrecisionOnZero === true && mvalue.indexOf(",00", mvalue.length - ",00".length) === -1) {
 						mvalue = mvalue + ",00";
