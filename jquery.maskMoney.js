@@ -119,11 +119,10 @@
 					if (k==8) { // backspace key
 						preventDefault(e);
 						
-						if (settings.fixPrecisionOnZero === true && startPos >= 3) {
+						if(startPos == endPos){
+							if (settings.fixPrecisionOnZero === true && startPos >= 3) {
 							startPos -= 3;
 						}
-
-						if(startPos == endPos){
 							// Remove single character
 							x.value = x.value.substring(0, startPos - 1) + x.value.substring(endPos, x.value.length);
 							startPos = startPos - 1;
