@@ -118,6 +118,10 @@
 
 					if (k==8) { // backspace key
 						preventDefault(e);
+						
+						if (settings.fixPrecisionOnZero === true && startPos >= 3) {
+							startPos -= 3;
+						}
 
 						if(startPos == endPos){
 							// Remove single character
@@ -200,11 +204,6 @@
 				}
 
 				function maskAndPosition(x, startPos) {
-					
-					if (settings.fixPrecisionOnZero === true && startPos >= 3) {
-						//startPos -= 3;
-					}
-					
 					var originalLen = input.val().length;
 					var mvalue = maskValue(x.value);
 					
