@@ -42,6 +42,10 @@
 		<script type="text/javascript">$("#demo6").maskMoney();</script>
 		<input type="button" onclick="$('#demo6').maskMoney('destroy')" value="remove maskmoney from demo6"/>
 		<pre class="brush: js">$("#demo6").maskMoney('destroy');</pre>
+		
+		<input type="text" id="demo7"/>
+		<script type="text/javascript">$("#demo7").maskMoney({ thousands: '.', decimal: ',', fixPrecisionOnValue: 0 });</script>
+		<pre class="brush: js">$("#demo7").maskMoney({ thousands: '.', decimal: ',', fixPrecisionOnValue: 0 });</pre>
 	</body>
 	<script type="text/javascript">
 		SyntaxHighlighter.all()
